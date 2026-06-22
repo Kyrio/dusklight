@@ -241,8 +241,6 @@ struct UserSettings {
         ConfigVar<float> freeCameraYSensitivity;
         ConfigVar<float> touchCameraXSensitivity;
         ConfigVar<float> touchCameraYSensitivity;
-        ConfigVar<bool> debugFlyCam;
-        ConfigVar<bool> debugFlyCamLockEvents;
         ConfigVar<bool> allowBackgroundInput;
         std::array<ConfigVar<bool>, 4> enableLED;
         ConfigVar<bool> swapDirectSelect;
@@ -303,6 +301,11 @@ struct UserSettings {
         std::array<ActionBindConfigVar, 4> openDusklightMenu;
         std::array<ActionBindConfigVar, 4> turboSpeedButton;
     } actionBindings;
+
+    struct {
+        ConfigVar<bool> enableHotkeys;
+        ConfigVar<bool> autoBlockGameInput;
+    } photoMode;
 };
 
 UserSettings& getSettings();
@@ -322,8 +325,16 @@ struct CollisionViewSettings {
     float drawRange;
 };
 
+struct PhotoModeTransientSettings {
+    bool enableFlyCamera;
+    bool lockFlyCamera;
+    bool blockGameInput;
+    bool freezeTime;
+};
+
 struct TransientSettings {
     CollisionViewSettings collisionView;
+    PhotoModeTransientSettings photoMode;
     bool skipFrameRateLimit;
     bool moveLinkActive;
     bool stateShareLoadActive;

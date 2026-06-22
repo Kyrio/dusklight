@@ -23,6 +23,8 @@
 #include <cmath>
 #include <cstring>
 
+#include "dusk/photo_mode.hpp"
+
 #if DEBUG
 #include "d/d_debug_pad.h"
 #include "d/d_debug_camera.h"
@@ -7510,7 +7512,7 @@ bool dCamera_c::isAimActive() {
 }
 
 bool dCamera_c::executeDebugFlyCam() {
-    if (!dusk::getSettings().game.debugFlyCam) {
+    if (!dusk::photo_mode::isFlyCameraActive()) {
         if (mDebugFlyCam.initialized) {
             deactivateDebugFlyCam();
         }
@@ -7524,7 +7526,7 @@ bool dCamera_c::executeDebugFlyCam() {
     }
 
     if (!mDebugFlyCam.initialized && (event->mEventStatus != 0 || dComIfGp_isPauseFlag())) {
-        dusk::getSettings().game.debugFlyCam.setValue(false);
+        dusk::photo_mode::toggleFlyCamera(false);
         return false;
     }
 
@@ -7544,7 +7546,7 @@ bool dCamera_c::executeDebugFlyCam() {
         mDebugFlyCam.initialized = true;
     }
 
-    if (dusk::getSettings().game.debugFlyCamLockEvents) {
+    if (dusk::photo_mode::isFreezingTime()) {
         event->mEventStatus = 1;
         dComIfGp_getEventManager().setCameraPlay(1);
     } else {
@@ -7563,7 +7565,7 @@ bool dCamera_c::executeDebugFlyCam() {
     f32 rollInput = 0.f;
     bool fast = false;
 
-    if (dusk::getSettings().game.debugFlyCamLockEvents) {
+    if (dusk::photo_mode::isFreezingTime() && !dusk::photo_mode::isFlyCameraLocked()) {
         interface_of_controller_pad& pad = mDoCPd_c::getCpadInfo(0);
         stickY = pad.mMainStickPosY * 72.0f;
         stickX = pad.mMainStickPosX * 72.0f;
@@ -7576,7 +7578,7 @@ bool dCamera_c::executeDebugFlyCam() {
         if (mDoCPd_c::getHoldX(PAD_1)) rollInput += 1.f;
     }
 
-    {
+    if (!dusk::photo_mode::isFlyCameraLocked()) {
         ImGuiIO& io = ImGui::GetIO();
         if (!io.WantCaptureKeyboard) {
             f32 kbX = 0.0f, kbY = 0.0f;

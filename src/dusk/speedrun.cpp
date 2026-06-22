@@ -40,7 +40,6 @@ void resetForSpeedrunMode() {
 
     getSettings().backend.enableAdvancedSettings.setSpeedrunValue(false);
     getSettings().game.recordingMode.setSpeedrunValue(false);
-    getSettings().game.debugFlyCam.setSpeedrunValue(false);
 }
 
 }  // namespace dusk

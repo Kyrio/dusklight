@@ -109,8 +109,6 @@ UserSettings g_userSettings = {
         .freeCameraYSensitivity {"game.freeCameraYSensitivity", 1.0f},
         .touchCameraXSensitivity {"game.touchCameraXSensitivity", 1.0f},
         .touchCameraYSensitivity {"game.touchCameraYSensitivity", 1.0f},
-        .debugFlyCam {"game.debugFlyCam", false},
-        .debugFlyCamLockEvents {"game.debugFlyCamLockEvents", true},
         .allowBackgroundInput {"game.allowBackgroundInput", true},
         .enableLED {
             ConfigVar<bool>{"game.enableLED_port0", true},
@@ -205,6 +203,11 @@ UserSettings g_userSettings = {
             ActionBindConfigVar{"actionBindings.turboButton_port2", PAD_NATIVE_BUTTON_INVALID},
             ActionBindConfigVar{"actionBindings.turboButton_port3", PAD_NATIVE_BUTTON_INVALID},
         },
+    },
+
+    .photoMode = {
+        .enableHotkeys {"photoMode.enableHotkeys", false},
+        .autoBlockGameInput {"photoMode.autoBlockGameInput", true},
     }
 };
 
@@ -333,8 +336,6 @@ void registerSettings() {
     Register(g_userSettings.game.touchTargeting);
     Register(g_userSettings.game.enableMenuPointer);
     Register(g_userSettings.game.touchControlsLayout);
-    Register(g_userSettings.game.debugFlyCam);
-    Register(g_userSettings.game.debugFlyCamLockEvents);
     Register(g_userSettings.game.allowBackgroundInput);
     Register(g_userSettings.game.enableLED[0]);
     Register(g_userSettings.game.enableLED[1]);
@@ -375,6 +376,9 @@ void registerSettings() {
     Register(g_userSettings.actionBindings.turboSpeedButton[1]);
     Register(g_userSettings.actionBindings.turboSpeedButton[2]);
     Register(g_userSettings.actionBindings.turboSpeedButton[3]);
+
+    Register(g_userSettings.photoMode.enableHotkeys);
+    Register(g_userSettings.photoMode.autoBlockGameInput);
 }
 
 // Transient settings

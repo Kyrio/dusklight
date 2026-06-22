@@ -16,6 +16,7 @@
 #include "f_pc/f_pc_name.h"
 #include "imgui.h"
 #include "modal.hpp"
+#include "photo_mode_settings.hpp"
 #include "settings.hpp"
 #include "ui.hpp"
 #include "warp.hpp"
@@ -55,6 +56,7 @@ MenuBar::MenuBar() : Document(kDocumentSource), mRoot(mDocument->GetElementById(
     if (getSettings().backend.enableAdvancedSettings) {
         mTabBar->add_tab("Warp", [this] { push(std::make_unique<WarpWindow>()); });
         mTabBar->add_tab("Editor", [this] { push(std::make_unique<EditorWindow>()); });
+        mTabBar->add_tab("Photo Mode", [this] { push(std::make_unique<PhotoModeSettingsWindow>()); });
     }
 
     mTabBar->add_tab("Achievements", [this] { push(std::make_unique<AchievementsWindow>()); });

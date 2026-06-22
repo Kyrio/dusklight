@@ -13,6 +13,7 @@
 #include <array>
 
 #include "dusk/action_bindings.h"
+#include "dusk/photo_mode.hpp"
 
 namespace dusk::ui::input {
 namespace {
@@ -674,7 +675,7 @@ void process_axis_direction(
 }  // namespace
 
 void sync_input_block() noexcept {
-    const bool shouldBlock = any_document_visible();
+    const bool shouldBlock = any_document_visible() || photo_mode::isBlockingGameInput();
     if (sPadInputBlocked == shouldBlock) {
         return;
     }

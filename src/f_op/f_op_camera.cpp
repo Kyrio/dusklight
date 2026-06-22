@@ -8,6 +8,7 @@
 #include "f_ap/f_ap_game.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_s_play.h"
+#include "dusk/photo_mode.hpp"
 #include "f_op/f_op_draw_tag.h"
 
 static s32 fopCam_Draw(camera_class* i_this) {
@@ -37,7 +38,7 @@ static int fopCam_Execute(camera_class* i_this) {
     #endif
 
     #if TARGET_PC
-    if (dusk::getSettings().game.debugFlyCam && dusk::getSettings().game.debugFlyCamLockEvents) {
+    if (dusk::photo_mode::isFreezingTime()) {
         dScnPly_c::setPauseTimer(1);
         ret = fpcMtd_Execute((process_method_class*)i_this->submethod, i_this);
     } else {

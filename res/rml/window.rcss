@@ -480,7 +480,7 @@ window.modal.danger .modal-header icon {
     font-weight: normal;
 }
 
-.modal-body span.tip {
+span.tip {
     font-size: 14dp;
     color: #92875B;
 }

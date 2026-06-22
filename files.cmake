@@ -1505,6 +1505,8 @@ set(DUSK_FILES
         src/dusk/ui/overlay.hpp
         src/dusk/ui/pane.cpp
         src/dusk/ui/pane.hpp
+        src/dusk/ui/photo_mode_settings.cpp
+        src/dusk/ui/photo_mode_settings.hpp
         src/dusk/ui/menu_bar.cpp
         src/dusk/ui/menu_bar.hpp
         src/dusk/ui/prelaunch.cpp
@@ -1546,6 +1548,7 @@ set(DUSK_FILES
         src/dusk/discord_presence.cpp
         src/dusk/version.cpp
         src/dusk/action_bindings.cpp
+        src/dusk/photo_mode.cpp
 )
 
 set(DUSK_HTTP_BACKEND_FILES

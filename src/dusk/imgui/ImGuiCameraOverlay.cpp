@@ -55,39 +55,39 @@ namespace dusk {
 
         ImGui::SeparatorText("Options");
 
-        bool eventRunning = (dComIfGp_event_runCheck() || dComIfGp_isPauseFlag()) && !getSettings().game.debugFlyCam;
-        if (eventRunning) {
-            ImGui::BeginDisabled();
-        }
-        config::ImGuiCheckbox("Fly Mode", getSettings().game.debugFlyCam);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-            if (eventRunning) {
-                ImGui::SetTooltip("Cannot enable while paused or during an active event.");
-            } else {
-                ImGui::SetTooltip("Detach camera and fly freely.\n"
-                                  "WASD/Arrows/Left stick: move, Mouse/C-stick: look\n"
-                                  "Ctrl/L: down, Space/R: up, Shift/Z: fast\n"
-                                "Q Key/Y: roll left, R Key/X: roll right");
-            }
-        }
-        if (eventRunning) {
-            ImGui::EndDisabled();
-        }
-
-        if (!getSettings().game.debugFlyCam) {
-            ImGui::BeginDisabled();
-        }
-        config::ImGuiCheckbox("Freeze Time", getSettings().game.debugFlyCamLockEvents);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-            if (!getSettings().game.debugFlyCam) {
-                ImGui::SetTooltip("Enable Fly Mode first.");
-            } else {
-                ImGui::SetTooltip("Freezes the game while flying.");
-            }
-        }
-        if (!getSettings().game.debugFlyCam) {
-            ImGui::EndDisabled();
-        }
+        // bool eventRunning = (dComIfGp_event_runCheck() || dComIfGp_isPauseFlag()) && !getSettings().game.debugFlyCam;
+        // if (eventRunning) {
+        //     ImGui::BeginDisabled();
+        // }
+        // config::ImGuiCheckbox("Fly Mode", getSettings().game.debugFlyCam);
+        // if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        //     if (eventRunning) {
+        //         ImGui::SetTooltip("Cannot enable while paused or during an active event.");
+        //     } else {
+        //         ImGui::SetTooltip("Detach camera and fly freely.\n"
+        //                           "WASD/Arrows/Left stick: move, Mouse/C-stick: look\n"
+        //                           "Ctrl/L: down, Space/R: up, Shift/Z: fast\n"
+        //                         "Q Key/Y: roll left, R Key/X: roll right");
+        //     }
+        // }
+        // if (eventRunning) {
+        //     ImGui::EndDisabled();
+        // }
+        //
+        // if (!getSettings().game.debugFlyCam) {
+        //     ImGui::BeginDisabled();
+        // }
+        // config::ImGuiCheckbox("Freeze Time", getSettings().game.debugFlyCamLockEvents);
+        // if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        //     if (!getSettings().game.debugFlyCam) {
+        //         ImGui::SetTooltip("Enable Fly Mode first.");
+        //     } else {
+        //         ImGui::SetTooltip("Freezes the game while flying.");
+        //     }
+        // }
+        // if (!getSettings().game.debugFlyCam) {
+        //     ImGui::EndDisabled();
+        // }
 
         ShowCornerContextMenu(m_cameraOverlayCorner, 0);
 
