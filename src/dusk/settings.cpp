@@ -1,4 +1,6 @@
 #include "dusk/settings.h"
+
+#include <SDL3/SDL_scancode.h>
 #include "dusk/config.hpp"
 
 namespace dusk {
@@ -206,8 +208,15 @@ UserSettings g_userSettings = {
     },
 
     .photoMode = {
-        .enableHotkeys {"photoMode.enableHotkeys", false},
+        .enablePhotoFeatures {"photoMode.enablePhotoFeatures", false},
         .autoBlockGameInput {"photoMode.autoBlockGameInput", true},
+
+        .keyBindings = {
+            .enableFlyCamera = { "photoMode.keyBindings.enableFlyCamera", SDL_SCANCODE_INSERT },
+            .lockFlyCamera = { "photoMode.keyBindings.lockFlyCamera", SDL_SCANCODE_HOME },
+            .blockGameInput = { "photoMode.keyBindings.blockGameInput", SDL_SCANCODE_KP_PERIOD },
+            .freezeTime = { "photoMode.keyBindings.freezeTime", SDL_SCANCODE_KP_0 },
+        },
     }
 };
 
@@ -377,8 +386,12 @@ void registerSettings() {
     Register(g_userSettings.actionBindings.turboSpeedButton[2]);
     Register(g_userSettings.actionBindings.turboSpeedButton[3]);
 
-    Register(g_userSettings.photoMode.enableHotkeys);
+    Register(g_userSettings.photoMode.enablePhotoFeatures);
     Register(g_userSettings.photoMode.autoBlockGameInput);
+    Register(g_userSettings.photoMode.keyBindings.enableFlyCamera);
+    Register(g_userSettings.photoMode.keyBindings.lockFlyCamera);
+    Register(g_userSettings.photoMode.keyBindings.blockGameInput);
+    Register(g_userSettings.photoMode.keyBindings.freezeTime);
 }
 
 // Transient settings

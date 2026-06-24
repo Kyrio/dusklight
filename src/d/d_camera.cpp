@@ -7512,7 +7512,7 @@ bool dCamera_c::isAimActive() {
 }
 
 bool dCamera_c::executeDebugFlyCam() {
-    if (!dusk::photo_mode::isFlyCameraActive()) {
+    if (!dusk::photo_mode::is_fly_camera_enabled()) {
         if (mDebugFlyCam.initialized) {
             deactivateDebugFlyCam();
         }
@@ -7526,7 +7526,7 @@ bool dCamera_c::executeDebugFlyCam() {
     }
 
     if (!mDebugFlyCam.initialized && (event->mEventStatus != 0 || dComIfGp_isPauseFlag())) {
-        dusk::photo_mode::toggleFlyCamera(false);
+        dusk::photo_mode::toggle_fly_camera(false);
         return false;
     }
 
@@ -7546,7 +7546,7 @@ bool dCamera_c::executeDebugFlyCam() {
         mDebugFlyCam.initialized = true;
     }
 
-    if (dusk::photo_mode::isFreezingTime()) {
+    if (dusk::photo_mode::is_time_frozen()) {
         event->mEventStatus = 1;
         dComIfGp_getEventManager().setCameraPlay(1);
     } else {
@@ -7565,7 +7565,7 @@ bool dCamera_c::executeDebugFlyCam() {
     f32 rollInput = 0.f;
     bool fast = false;
 
-    if (dusk::photo_mode::isFreezingTime() && !dusk::photo_mode::isFlyCameraLocked()) {
+    if (dusk::photo_mode::is_time_frozen() && !dusk::photo_mode::is_fly_camera_locked()) {
         interface_of_controller_pad& pad = mDoCPd_c::getCpadInfo(0);
         stickY = pad.mMainStickPosY * 72.0f;
         stickX = pad.mMainStickPosX * 72.0f;
@@ -7578,7 +7578,7 @@ bool dCamera_c::executeDebugFlyCam() {
         if (mDoCPd_c::getHoldX(PAD_1)) rollInput += 1.f;
     }
 
-    if (!dusk::photo_mode::isFlyCameraLocked()) {
+    if (!dusk::photo_mode::is_fly_camera_locked()) {
         ImGuiIO& io = ImGui::GetIO();
         if (!io.WantCaptureKeyboard) {
             f32 kbX = 0.0f, kbY = 0.0f;

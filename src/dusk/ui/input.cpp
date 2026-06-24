@@ -675,7 +675,7 @@ void process_axis_direction(
 }  // namespace
 
 void sync_input_block() noexcept {
-    const bool shouldBlock = any_document_visible() || photo_mode::isBlockingGameInput();
+    const bool shouldBlock = any_document_visible() || photo_mode::is_game_input_blocked();
     if (sPadInputBlocked == shouldBlock) {
         return;
     }

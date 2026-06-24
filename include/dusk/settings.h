@@ -303,8 +303,15 @@ struct UserSettings {
     } actionBindings;
 
     struct {
-        ConfigVar<bool> enableHotkeys;
+        ConfigVar<bool> enablePhotoFeatures;
         ConfigVar<bool> autoBlockGameInput;
+
+        struct {
+            ConfigVar<int> enableFlyCamera;
+            ConfigVar<int> lockFlyCamera;
+            ConfigVar<int> blockGameInput;
+            ConfigVar<int> freezeTime;
+        } keyBindings;
     } photoMode;
 };
 

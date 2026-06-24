@@ -94,6 +94,8 @@
 #include "f_pc/f_pc_draw.h"
 #include "tracy/Tracy.hpp"
 #include <RmlUi/Core.h>
+
+#include "dusk/photo_mode.hpp"
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
@@ -260,6 +262,7 @@ void main01(void) {
                 dusk::mouse::handle_event(event->sdl);
                 dusk::ui::handle_event(event->sdl);
                 dusk::g_imguiConsole.HandleSDLEvent(event->sdl);
+                dusk::photo_mode::handle_event(event->sdl);
                 break;
             case AURORA_WINDOW_RESIZED:
                 if (dusk::getSettings().video.rememberWindowSize && !dusk::getSettings().video.enableFullscreen) {

@@ -18,6 +18,18 @@ struct ConfigBoolProps {
     bool override;
 };
 
+struct TransientBoolProps {
+    Rml::String key;
+    Rml::String icon;
+    Rml::String helpText;
+    std::function<void(bool)> setValue;
+    std::function<bool()> isDisabled;
+};
+
+bool features_enabled() {
+    return getSettings().photoMode.enablePhotoFeatures;
+}
+
 SelectButton& config_bool_select(
     Pane& leftPane, Pane& rightPane, ConfigVar<bool>& var, ConfigBoolProps props) {
     auto& button = leftPane.add_child<BoolButton>(BoolButton::Props{
@@ -53,23 +65,13 @@ SelectButton& config_bool_select(
 }
 
 SelectButton& transient_bool_select(
-    Pane& leftPane, Pane& rightPane, bool& var, bool defaultValue, ConfigBoolProps props) {
+    Pane& leftPane, Pane& rightPane, bool& var, bool defaultValue, TransientBoolProps props) {
     auto& button = leftPane.add_child<BoolButton>(BoolButton::Props{
         .key = std::move(props.key),
         .icon = std::move(props.icon),
         .getValue = [&var] { return var; },
         .setValue =
-            [&var, callback = std::move(props.onChange)](bool value) {
-                if (value == var) {
-                    return;
-                }
-
-                var = value;
-
-                if (callback) {
-                    callback(value);
-                }
-            },
+            props.setValue ? std::move(props.setValue) : [&var](bool value) { var = value; },
         .isDisabled = std::move(props.isDisabled),
         .isModified = [&var, defaultValue] { return var != defaultValue; },
     });
@@ -89,19 +91,26 @@ PhotoModeSettingsWindow::PhotoModeSettingsWindow() {
         auto& rightPane = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
         leftPane.add_section("General");
-        config_bool_select(leftPane, rightPane, getSettings().photoMode.enableHotkeys,
-            {.key = "Enable Hotkeys",
-                .helpText = "Listen to the photo mode hotkeys defined in the Keyboard and Gamepad "
-                            "tabs.<br/>"
-                            "<span class=\"tip\">Disabled by default to not disturb normal "
-                            "gameplay.</span>"});
+        config_bool_select(leftPane, rightPane, getSettings().photoMode.enablePhotoFeatures,
+            {
+                .key = "Enable Features",
+                .helpText =
+                    "Enable Dusklight's photo mode features.<br/>"
+                    "<span class=\"tip\">Tip: Disable this if you don't want any photo mode "
+                    "hotkeys to be triggered during gameplay.</span>",
+                .onChange =
+                    [](bool value) {
+                        if (!value) {
+                            photo_mode::reset();
+                        }
+                    },
+            });
 
         config_bool_select(leftPane, rightPane, getSettings().photoMode.autoBlockGameInput,
-            {
-                .key = "Block Input By Default",
-                .helpText =
-                    "Start blocking game input as soon as the Fly Camera is enabled.",
-            });
+            {.key = "Block Input By Default",
+                .helpText = "Block game input while the fly camera is enabled, unless you manually "
+                            "unblock it.",
+                .isDisabled = [] { return !features_enabled(); }});
 
         leftPane.add_section("Session");
         transient_bool_select(leftPane, rightPane, getTransientSettings().photoMode.enableFlyCamera,
@@ -111,16 +120,20 @@ PhotoModeSettingsWindow::PhotoModeSettingsWindow() {
                 .helpText = "Enable the photo mode camera, allowing you to fly around with the "
                             "controls you have set.<br/>"
                             "<span class=\"tip\">Tip: Bind a key to Toggle Fly Camera in the "
-                            "Keyboard/Gamepad tab.</span>",
-                .onChange = [](bool value) { dusk::photo_mode::toggleFlyCamera(value); },
+                            "Controls tab.</span>",
+                .setValue = [](bool value) { photo_mode::toggle_fly_camera(value); },
+                .isDisabled = [] { return !features_enabled(); },
             });
 
         transient_bool_select(leftPane, rightPane, getTransientSettings().photoMode.lockFlyCamera,
             false,
             {
                 .key = "Lock Fly Camera",
-                .helpText = "Lock the Fly Camera in place. Useful to avoid losing your shot while "
+                .helpText = "Lock the fly camera in place. Useful to avoid losing your shot while "
                             "adjusting settings.",
+                .setValue =
+                    [](bool value) { photo_mode::toggle_lock_fly_camera(value); },
+                .isDisabled = [] { return !features_enabled() || !getTransientSettings().photoMode.enableFlyCamera; },
             });
 
         transient_bool_select(leftPane, rightPane, getTransientSettings().photoMode.blockGameInput,
@@ -128,6 +141,9 @@ PhotoModeSettingsWindow::PhotoModeSettingsWindow() {
             {
                 .key = "Block Game Input",
                 .helpText = "Block normal game input, such as player movement.",
+                .setValue =
+                    [](bool value) { photo_mode::toggle_block_game_input(value); },
+                .isDisabled = [] { return !features_enabled(); },
             });
 
         transient_bool_select(leftPane, rightPane, getTransientSettings().photoMode.freezeTime,
@@ -136,6 +152,8 @@ PhotoModeSettingsWindow::PhotoModeSettingsWindow() {
                 .key = "Freeze Time",
                 .helpText =
                     "Pause in-game time, which lets you move the camera around a still scene.",
+                .setValue = [](bool value) { photo_mode::toggle_freeze_time(value); },
+                .isDisabled = [] { return !features_enabled(); },
             });
 
         config_bool_select(leftPane, rightPane, getSettings().game.minimalHUD,
@@ -144,13 +162,13 @@ PhotoModeSettingsWindow::PhotoModeSettingsWindow() {
                 .helpText = "Override the Minimal HUD setting for this session.<br/>"
                             "Useful to hide UI elements for your shots without affecting your "
                             "saved config.",
+                .isDisabled = [] { return !features_enabled(); },
                 .override = true,
             });
     });
 
-    add_tab("Raw Data", TabBuilder());
-    add_tab("Keyboard", TabBuilder());
-    add_tab("Gamepad", TabBuilder());
+    add_tab("Controls", TabBuilder());
+    add_tab("Camera Data", TabBuilder());
 }
 
 }  // namespace dusk::ui

@@ -38,7 +38,7 @@ static int fopCam_Execute(camera_class* i_this) {
     #endif
 
     #if TARGET_PC
-    if (dusk::photo_mode::isFreezingTime()) {
+    if (dusk::photo_mode::is_time_frozen()) {
         dScnPly_c::setPauseTimer(1);
         ret = fpcMtd_Execute((process_method_class*)i_this->submethod, i_this);
     } else {
