@@ -210,12 +210,14 @@ UserSettings g_userSettings = {
     .photoMode = {
         .enablePhotoFeatures {"photoMode.enablePhotoFeatures", false},
         .autoBlockGameInput {"photoMode.autoBlockGameInput", true},
+        .flyCameraControlMode {"photoMode.flyCameraControlMode", FlyCameraControlMode::Both},
 
         .keyBindings = {
-            .enableFlyCamera = { "photoMode.keyBindings.enableFlyCamera", SDL_SCANCODE_INSERT },
-            .lockFlyCamera = { "photoMode.keyBindings.lockFlyCamera", SDL_SCANCODE_HOME },
-            .blockGameInput = { "photoMode.keyBindings.blockGameInput", SDL_SCANCODE_KP_PERIOD },
-            .freezeTime = { "photoMode.keyBindings.freezeTime", SDL_SCANCODE_KP_0 },
+            .enableFlyCamera = {"photoMode.keyBindings.enableFlyCamera", SDL_SCANCODE_INSERT},
+            .lockFlyCamera = {"photoMode.keyBindings.lockFlyCamera", SDL_SCANCODE_HOME},
+            .blockGameInput = {"photoMode.keyBindings.blockGameInput", SDL_SCANCODE_KP_PERIOD},
+            .freezeTime = {"photoMode.keyBindings.freezeTime", SDL_SCANCODE_KP_0},
+            .minimalHUD = {"photoMode.keyBindings.minimalHUD", SDL_SCANCODE_DELETE},
         },
     }
 };
@@ -388,10 +390,12 @@ void registerSettings() {
 
     Register(g_userSettings.photoMode.enablePhotoFeatures);
     Register(g_userSettings.photoMode.autoBlockGameInput);
+    Register(g_userSettings.photoMode.flyCameraControlMode);
     Register(g_userSettings.photoMode.keyBindings.enableFlyCamera);
     Register(g_userSettings.photoMode.keyBindings.lockFlyCamera);
     Register(g_userSettings.photoMode.keyBindings.blockGameInput);
     Register(g_userSettings.photoMode.keyBindings.freezeTime);
+    Register(g_userSettings.photoMode.keyBindings.minimalHUD);
 }
 
 // Transient settings

@@ -12,6 +12,11 @@ void reset() {
 }
 
 void handle_event(const SDL_Event& event) {
+    if (ui::any_document_visible()) {
+        // Photo mode hotkeys should not be triggered in Dusklight menus
+        return;
+    }
+
     if (event.type != SDL_EVENT_GAMEPAD_BUTTON_DOWN &&
         event.type != SDL_EVENT_GAMEPAD_AXIS_MOTION && event.type != SDL_EVENT_KEY_DOWN)
     {
@@ -34,6 +39,8 @@ void handle_event(const SDL_Event& event) {
             toggle_block_game_input(!transientSettings.blockGameInput);
         } else if (event.key.scancode == settings.keyBindings.freezeTime) {
             toggle_freeze_time(!transientSettings.freezeTime);
+        } else if (event.key.scancode == settings.keyBindings.minimalHUD) {
+            toggle_minimal_hud_override(!getSettings().game.minimalHUD);
         }
     }
 }
@@ -101,6 +108,21 @@ void toggle_freeze_time(bool enabled) {
         .type = "photo_mode",
         .title = "Photo Mode",
         .content = enabled ? "Time paused" : "Time unpaused",
+        .duration = std::chrono::seconds(2),
+    });
+}
+
+void toggle_minimal_hud_override(bool enabled) {
+    if (getSettings().game.minimalHUD == enabled) {
+        return;
+    }
+
+    getSettings().game.minimalHUD.setOverrideValue(enabled);
+
+    ui::push_toast({
+        .type = "photo_mode",
+        .title = "Photo Mode",
+        .content = enabled ? "Minimal HUD enabled" : "Minimal HUD disabled",
         .duration = std::chrono::seconds(2),
     });
 }

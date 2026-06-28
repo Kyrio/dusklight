@@ -66,6 +66,12 @@ enum class MagicArmorMode : u8 {
     COSMETIC = 4,
 };
 
+enum class FlyCameraControlMode : u8 {
+    Both = 0,
+    MouseKeyboard = 1,
+    Gamepad = 2,
+};
+
 namespace config {
 template <>
 struct ConfigEnumRange<BloomMode> {
@@ -119,6 +125,12 @@ template <>
 struct ConfigEnumRange<MagicArmorMode> {
     static constexpr auto min = MagicArmorMode::NORMAL;
     static constexpr auto max = MagicArmorMode::COSMETIC;
+};
+
+template <>
+struct ConfigEnumRange<FlyCameraControlMode> {
+    static constexpr auto min = FlyCameraControlMode::Both;
+    static constexpr auto max = FlyCameraControlMode::Gamepad;
 };
 
 template <>
@@ -305,12 +317,14 @@ struct UserSettings {
     struct {
         ConfigVar<bool> enablePhotoFeatures;
         ConfigVar<bool> autoBlockGameInput;
+        ConfigVar<FlyCameraControlMode> flyCameraControlMode;
 
         struct {
             ConfigVar<int> enableFlyCamera;
             ConfigVar<int> lockFlyCamera;
             ConfigVar<int> blockGameInput;
             ConfigVar<int> freezeTime;
+            ConfigVar<int> minimalHUD;
         } keyBindings;
     } photoMode;
 };
