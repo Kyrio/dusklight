@@ -5,6 +5,10 @@
 #include "dusk/photo_mode.hpp"
 #include "pane.hpp"
 
+#include "m_Do/m_Do_audio.h"
+
+#include <SDL3/SDL_keyboard.h>
+
 namespace dusk::ui {
 
 namespace {
@@ -32,7 +36,7 @@ struct SessionBoolProps {
 };
 
 Rml::String keyboard_key_name(int scancode) {
-    if (scancode == PAD_KEY_INVALID) {
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
         return "Not Bound";
     }
 
@@ -46,6 +50,36 @@ Rml::String keyboard_key_name(int scancode) {
     }
 
     return name;
+}
+
+SDL_Scancode keyboard_key_pressed() {
+    int keyCount = 0;
+    if (const bool* keys = SDL_GetKeyboardState(&keyCount); keys != nullptr) {
+        for (int i = 1; i < keyCount; ++i) {
+            if (keys[i]) {
+                return static_cast<SDL_Scancode>(i);
+            }
+        }
+    }
+
+    return SDL_SCANCODE_UNKNOWN;
+}
+
+bool input_neutral() {
+    return keyboard_key_pressed() == SDL_SCANCODE_UNKNOWN;
+}
+
+void reset_key_bindings() {
+    auto& [enableFlyCamera, lockFlyCamera, blockGameInput, freezeTime, minimalHUD] =
+        getSettings().photoMode.keyBindings;
+
+    enableFlyCamera.setValue(enableFlyCamera.getDefaultValue());
+    lockFlyCamera.setValue(lockFlyCamera.getDefaultValue());
+    blockGameInput.setValue(blockGameInput.getDefaultValue());
+    freezeTime.setValue(freezeTime.getDefaultValue());
+    minimalHUD.setValue(minimalHUD.getDefaultValue());
+
+    config::Save();
 }
 
 bool features_enabled() {
@@ -101,16 +135,18 @@ BoolButton& session_bool_button(
     return button;
 }
 
-void add_key_button(Pane& pane, ConfigVar<int>& binding, Rml::String title) {
-    pane.add_select_button({
-        .key = std::move(title),
-        .getValue = [&binding] { return keyboard_key_name(binding.getValue()); },
-    });
-}
-
 }  // namespace
 
 PhotoModeSettingsWindow::PhotoModeSettingsWindow() {
+    listen(
+        Rml::EventId::Keydown,
+        [this](Rml::Event& event) {
+            if (capture_active() || mSuppressNavigationUntilNeutral) {
+                event.StopPropagation();
+            }
+        },
+        true);
+
     add_tab("Settings", [this](Rml::Element* content) {
         auto& leftPane = add_child<Pane>(content, Pane::Type::Controlled);
         auto& rightPane = add_child<Pane>(content, Pane::Type::Uncontrolled);
@@ -126,6 +162,15 @@ PhotoModeSettingsWindow::PhotoModeSettingsWindow() {
     }));
 
     add_tab("Camera Data", TabBuilder());
+}
+
+void PhotoModeSettingsWindow::update() {
+    poll_pending_binding();
+    Window::update();
+}
+void PhotoModeSettingsWindow::hide(bool close) {
+    cancel_pending_binding();
+    Window::hide(close);
 }
 
 void PhotoModeSettingsWindow::build_settings_tab(Pane& leftPane, Pane& rightPane) {
@@ -217,14 +262,39 @@ void PhotoModeSettingsWindow::build_controls_tab(Pane& leftPane, Pane& rightPane
                                   .key = "Key Bindings",
                                   .getValue = [] { return Rml::String(">"); },
                               }),
-        rightPane, [&keyBindings](Pane& pane) {
+        rightPane, [this, &keyBindings](Pane& pane) {
+            auto addKeyButton = [this, &pane](ConfigVar<int>& binding, Rml::String title) {
+                pane.add_select_button({
+                                           .key = std::move(title),
+                                           .getValue =
+                                               [this, &binding] {
+                                                   if (mPendingKeyBinding == &binding) {
+                                                       return pending_key_label();
+                                                   }
+
+                                                   return keyboard_key_name(binding.getValue());
+                                               },
+
+                                       })
+                    .on_pressed([this, &binding] {
+                        mDoAud_seStartMenu(kSoundClick);
+                        cancel_pending_binding();
+                        mPendingKeyBinding = &binding;
+                    });
+            };
+
             pane.clear();
+            pane.add_button("Restore Default Bindings").on_pressed([] {
+                mDoAud_seStartMenu(kSoundClick);
+                reset_key_bindings();
+            });
+            
             pane.add_section("Hotkeys");
-            add_key_button(pane, keyBindings.enableFlyCamera, "Enable Fly Camera");
-            add_key_button(pane, keyBindings.lockFlyCamera, "Lock Fly Camera");
-            add_key_button(pane, keyBindings.blockGameInput, "Block Game Input");
-            add_key_button(pane, keyBindings.freezeTime, "Freeze Time");
-            add_key_button(pane, keyBindings.minimalHUD, "Minimal HUD");
+            addKeyButton(keyBindings.enableFlyCamera, "Enable Fly Camera");
+            addKeyButton(keyBindings.lockFlyCamera, "Lock Fly Camera");
+            addKeyButton(keyBindings.blockGameInput, "Block Game Input");
+            addKeyButton(keyBindings.freezeTime, "Freeze Time");
+            addKeyButton(keyBindings.minimalHUD, "Minimal HUD");
         });
 
     leftPane.add_section("Options");
@@ -256,6 +326,7 @@ void PhotoModeSettingsWindow::build_controls_tab(Pane& leftPane, Pane& rightPane
                             },
                     })
                     .on_pressed([i] {
+                        mDoAud_seStartMenu(kSoundItemChange);
                         getSettings().photoMode.flyCameraControlMode.setValue(
                             static_cast<FlyCameraControlMode>(i));
                         config::Save();
@@ -264,6 +335,59 @@ void PhotoModeSettingsWindow::build_controls_tab(Pane& leftPane, Pane& rightPane
 
             pane.add_rml("<br/>Choose which devices are used to control the fly camera.");
         });
+}
+
+void PhotoModeSettingsWindow::poll_pending_binding() {
+    if (mSuppressNavigationUntilNeutral && input_neutral()) {
+        mSuppressNavigationUntilNeutral = false;
+    }
+
+    if (!capture_active()) {
+        return;
+    }
+
+    if (!mReadyToCapture) {
+        if (input_neutral()) {
+            mReadyToCapture = true;
+        }
+        return;
+    }
+
+    if (mPendingKeyBinding != nullptr) {
+        switch (SDL_Scancode scancode = keyboard_key_pressed()) {
+        case SDL_SCANCODE_UNKNOWN:
+            return;
+        case SDL_SCANCODE_ESCAPE:
+            mPendingKeyBinding->setValue(SDL_SCANCODE_UNKNOWN);
+            finish_pending_binding();
+            return;
+        default:
+            mPendingKeyBinding->setValue(scancode);
+            finish_pending_binding();
+            return;
+        }
+    }
+}
+
+void PhotoModeSettingsWindow::cancel_pending_binding() {
+    mPendingKeyBinding = nullptr;
+    mReadyToCapture = false;
+    mSuppressNavigationUntilNeutral = false;
+}
+
+void PhotoModeSettingsWindow::finish_pending_binding() {
+    mPendingKeyBinding = nullptr;
+    mReadyToCapture = false;
+    mSuppressNavigationUntilNeutral = true;
+    config::Save();
+}
+
+Rml::String PhotoModeSettingsWindow::pending_key_label() const {
+    return mReadyToCapture ? "Press a Key Button..." : "Waiting...";
+}
+
+bool PhotoModeSettingsWindow::capture_active() const {
+    return mPendingKeyBinding != nullptr;
 }
 
 }  // namespace dusk::ui
